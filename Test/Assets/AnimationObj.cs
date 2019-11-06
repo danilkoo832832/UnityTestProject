@@ -11,11 +11,11 @@ public class AnimationObj : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        /* Don't work
-        Debug.Log(segm_test(new Vector3(0,0),new Vector3(0,5),new Vector3(0,0),new Vector3(-5,-0)));
+        //* Don't work
+        Debug.Log(segm_test(new Vector3(1,0),new Vector3(10,0),new Vector3(0,0),new Vector3(0,5)));
         anim = new Animations(arpoly(new Vector3(0,0),4,12,6),true,10);
+        transform.position = anim.Points[0];
         //*/
-
         //anim = new Animations(new Vector3[3]{new Vector3(10,10),new Vector3(10,20f),new Vector3(20,20f)},true,10);
     }
     
@@ -26,6 +26,75 @@ public class AnimationObj : MonoBehaviour
         //transform.position = new Vector3(Random.Range(-10, 10), 1, 0);
         if (anim !=null && anim.State != -1) anim.StartAnim(this);
     }
+    //*
+    Matrix2x2 f(Vector3 a, Vector3 b, Vector3 Point){
+        Vector3 firstVector = Point - a;
+        Vector3 secondVector = b - a;
+        return new Matrix2x2(firstVector.x,secondVector.x,firstVector.y,secondVector.y);
+    }
+    public bool segm_test(Vector3 a, Vector3 b, Vector3 c, Vector3 d){
+        Matrix2x2 matrix1 = f(a,b,c);
+        Matrix2x2 matrix2 = f(a,b,d);
+        Matrix2x2 matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
+        bool t =false;
+        if (matrixM[0,0] <= 0 || matrixM[0,1] <= 0 || matrixM[1,0] <= 0 || matrixM[1,1] <= 0){
+            t = true;
+        }
+        matrix1 = f(c,d,a);
+        matrix2 = f(c,d,b);
+        matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
+        if (t && matrixM[0,0] <= 0 || matrixM[0,1] <= 0 || matrixM[1,0] <= 0 || matrixM[1,1] <= 0){
+            return true;
+        }
+        return false;
+    }
+    public Vector3[] arpoly(Vector3 T,int a, int b,int M){
+        Vector3[] Points = new Vector3[M];
+        Vector3 q=T;
+        for(int n=0; n < M; n++){
+            Points[n] = q;
+            
+            if(n>0){
+                for(int i = 0; i<1000;i++){ 
+                    int d = a + Random.Range(0,b-a);
+                    float fi = Random.Range(0f,2*Mathf.PI);
+                    q = new Vector3(d*Mathf.Cos(fi)+Points[n].x,d*Mathf.Sin(fi)+Points[n].y);
+                    if(n>=3)
+                    {
+                        bool collision = false;
+                        for(int k=0; k < n-1;k++){
+                            if(k+1 != M-1) {
+                                if(segm_test(Points[n],q,Points[k],Points[k+1])){
+                                    collision = true;
+                                    
+                                }
+                            }
+                            else{
+                                if(segm_test(q,Points[0],Points[k],Points[k+1])){
+                                    collision = true;
+                                    Debug.Log(n);
+                                }
+                            }
+                        }
+
+                        if (collision == false){
+                            Debug.Log(collision);
+                            Points[n]=q;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        Points[n] = q;
+                        break;
+                    }
+
+                }
+            }
+        }
+        return Points;
+    }
+    //*/
 }
 
 public class Animations
@@ -78,11 +147,19 @@ public class Animations
         }
     }
 }
-//Don't work
-
-/*/
 class Matrix2x2{
-    public float[,] matrix = new float[2,2];
+    private float[,] matrix = new float[2,2];
+    public float this[int i,int ii]
+    {
+        get
+        {
+            return matrix[i,ii];
+        }
+        set
+        {
+            matrix[i,ii] = value;
+        }
+    }
 
     public Matrix2x2(float a11,float a12,float a21,float a22){
         matrix[0,0] = a11;
@@ -92,90 +169,26 @@ class Matrix2x2{
     }
     public Matrix2x2(Vector3 a, Vector3 b){
         matrix[0,0] = a.x;
-        matrix[0,1] = a.y;
-        matrix[1,0] = b.x;
+        matrix[1,0] = a.y;
+        matrix[0,1] = b.x;
         matrix[1,1] = b.y;
     }
-
+    //a[0,0]*b[0,0]+a[0,1]*b[1,0],  a[0,0]*b[0,1]+a[0,1]*b[1,1],
+    //a[1,0]*b[0,0]+a[1,1]*b[1,0],  a[1,0]*b[0,1]+a[1,1]*b[1,1]
+    
     static public Matrix2x2 Multiplay(Matrix2x2 a,Matrix2x2 b){
-        return new Matrix2x2(a.matrix[0,0]*b.matrix[0,0]+a.matrix[0,1]*b.matrix[1,0],a.matrix[0,0]*b.matrix[0,1]+a.matrix[0,1]*b.matrix[1,1],a.matrix[1,0]*b.matrix[0,0]+a.matrix[1,1]*b.matrix[1,0],a.matrix[1,0]*b.matrix[0,1]+a.matrix[1,1]*b.matrix[1,1]);
+        return new Matrix2x2(a[0,0]*b[0,0]+a[0,1]*b[1,0],a[0,0]*b[0,1]+a[0,1]*b[1,1],a[1,0]*b[0,0]+a[1,1]*b[1,0],a[1,0]*b[0,1]+a[1,1]*b[1,1]);
     }
 }
 
 
+//Don't work
+
+/*/
+
+
+
 //---MEthods
-    Matrix2x2 f(Vector3 a, Vector3 b, Vector3 Point){
-        b -= a;
-        a = Point - a;
-        a.x = Mathf.Abs(a.x);
-        a.y = Mathf.Abs(a.y);
-        a.z = Mathf.Abs(a.z);
-        b.x = Mathf.Abs(b.x);
-        b.y = Mathf.Abs(b.y);
-        b.z = Mathf.Abs(b.z);
-        return new Matrix2x2(a.x,b.x,a.y,b.y);
-    }
-    public bool segm_test(Vector3 a, Vector3 b, Vector3 c, Vector3 d){
-        Matrix2x2 matrix1 = f(a,b,c);
-        Matrix2x2 matrix2 = f(a,b,d);
-        Matrix2x2 matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
-        bool t =false;
-        if (matrixM.matrix[0,0] <= 0 || matrixM.matrix[0,1] <= 0 || matrixM.matrix[1,0] <= 0 || matrixM.matrix[1,1] <= 0){
-            t = true;
-        }
-        matrix1 = f(b,c,a);
-        matrix2 = f(b,c,b);
-        matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
-        if (t&&(matrixM.matrix[0,0] <= 0 || matrixM.matrix[0,1] <= 0 || matrixM.matrix[1,0] <= 0 || matrixM.matrix[1,1] <= 0)){
-            return true;
-        }
-        return false;
-    }
-    public Vector3[] arpoly(Vector3 T,int a, int b,int M){
-        Vector3[] Points = new Vector3[M];
-        Vector3 q=T;
-        for(int n=0; n < M; n++){
-            Points[n] = q;
-            
-            if(n>0){
-                for(int i = 0; i<1000;i++){ 
-                    int d = a + Random.Range(0,b-a);
-                    float fi = Random.Range(0f,2*Mathf.PI);
-                    q = new Vector3(d*Mathf.Cos(fi)+Points[n].x,d*Mathf.Sin(fi)+Points[n].y);
-                    if(n>=3)
-                    {
-                        bool collision = false;
-                        for(int k=0; k < n-1;k++){
-                            if(k+1 != M-1) {
-                                if(segm_test(Points[n],q,Points[k],Points[k+1])){
-                                    collision = true;
-                                    
-                                }
-                            }
-                            else{
-                                if(segm_test(q,Points[0],Points[k],Points[k+1])){
-                                    collision = true;
-                                    Debug.Log(n);
-                                }
-                            }
-                        }
-
-                        if (collision == false){
-                            Debug.Log(collision);
-                            Points[n]=q;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Points[n] = q;
-                        break;
-                    }
-
-                }
-            }
-        }
-        return Points;
-    }
+    
 
 //*/
