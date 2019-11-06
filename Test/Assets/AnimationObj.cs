@@ -12,8 +12,8 @@ public class AnimationObj : MonoBehaviour
     void Start()
     {
         //* Don't work
-        Debug.Log(segm_test(new Vector3(1,0),new Vector3(10,0),new Vector3(0,0),new Vector3(0,5)));
-        anim = new Animations(arpoly(new Vector3(0,0),4,12,6),true,10);
+        Debug.Log(segm_test(new Vector3(16,-12),new Vector3(22,5),new Vector3(0,0),new Vector3(7,-6)));
+        anim = new Animations(arpoly(new Vector3(0,0),4,8,6),true,10);
         transform.position = anim.Points[0];
         //*/
         //anim = new Animations(new Vector3[3]{new Vector3(10,10),new Vector3(10,20f),new Vector3(20,20f)},true,10);
@@ -27,72 +27,56 @@ public class AnimationObj : MonoBehaviour
         if (anim !=null && anim.State != -1) anim.StartAnim(this);
     }
     //*
-    Matrix2x2 f(Vector3 a, Vector3 b, Vector3 Point){
+    float f(Vector3 a, Vector3 b, Vector3 Point){
         Vector3 firstVector = Point - a;
         Vector3 secondVector = b - a;
-        return new Matrix2x2(firstVector.x,secondVector.x,firstVector.y,secondVector.y);
+
+        return (firstVector.x*secondVector.y-firstVector.y*secondVector.x);
     }
     public bool segm_test(Vector3 a, Vector3 b, Vector3 c, Vector3 d){
-        Matrix2x2 matrix1 = f(a,b,c);
-        Matrix2x2 matrix2 = f(a,b,d);
-        Matrix2x2 matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
-        bool t =false;
-        if (matrixM[0,0] <= 0 || matrixM[0,1] <= 0 || matrixM[1,0] <= 0 || matrixM[1,1] <= 0){
-            t = true;
-        }
-        matrix1 = f(c,d,a);
-        matrix2 = f(c,d,b);
-        matrixM = Matrix2x2.Multiplay(matrix1,matrix2);
-        if (t && matrixM[0,0] <= 0 || matrixM[0,1] <= 0 || matrixM[1,0] <= 0 || matrixM[1,1] <= 0){
-            return true;
-        }
-        return false;
+        return ((f(a,b,c)*f(a,b,d)<=0)&&(f(c,d,a)*f(c,d,b)<=0));
     }
     public Vector3[] arpoly(Vector3 T,int a, int b,int M){
         Vector3[] Points = new Vector3[M];
+        Points[0] = T;
         Vector3 q=T;
-        for(int n=0; n < M; n++){
-            Points[n] = q;
-            
-            if(n>0){
-                for(int i = 0; i<1000;i++){ 
-                    int d = a + Random.Range(0,b-a);
-                    float fi = Random.Range(0f,2*Mathf.PI);
-                    q = new Vector3(d*Mathf.Cos(fi)+Points[n].x,d*Mathf.Sin(fi)+Points[n].y);
-                    if(n>=3)
-                    {
-                        bool collision = false;
-                        for(int k=0; k < n-1;k++){
-                            if(k+1 != M-1) {
-                                if(segm_test(Points[n],q,Points[k],Points[k+1])){
-                                    collision = true;
-                                    
-                                }
-                            }
-                            else{
-                                if(segm_test(q,Points[0],Points[k],Points[k+1])){
-                                    collision = true;
-                                    Debug.Log(n);
-                                }
+        for(int n = 0; n< M;n++){
+            Points[n]=q;
+            for(int i = 0;i<10000 && n<M-1;i++){
+                int d = a + Random.Range(0,b-a);
+                float fi = Random.Range(0f,2*Mathf.PI);
+                Vector3 localQ = new Vector3(d*Mathf.Cos(fi)+Points[n].x,d*Mathf.Sin(fi)+Points[n].y);
+                if(n>=2){
+                    bool collision = false;
+                    for(int k = 0; k<n;k++){
+                        if(k+1!=M-2){
+                            if(k<n-1 && segm_test(Points[n],localQ,Points[k],Points[k+1])){ //if "if" dont have k<n-1 then collision in last iteration always true
+                                collision = true;
                             }
                         }
-
-                        if (collision == false){
-                            Debug.Log(collision);
-                            Points[n]=q;
-                            break;
+                        else{
+                            if(segm_test(localQ,Points[0],Points[k],Points[k+1])){
+                                collision = true;
+                            }
                         }
                     }
-                    else
-                    {
-                        Points[n] = q;
+                    if(!collision){
+                        q = localQ;
                         break;
                     }
-
+                }
+                else{
+                    q = localQ;
+                    break;
                 }
             }
+            
         }
         return Points;
+
+        //int d = a + Random.Range(0,b-a);
+        //float fi = Random.Range(0f,2*Mathf.PI);
+        //q = new Vector3(d*Mathf.Cos(fi)+Points[n].x,d*Mathf.Sin(fi)+Points[n].y);
     }
     //*/
 }
