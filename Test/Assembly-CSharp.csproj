@@ -55,6 +55,7 @@
   <ItemGroup>
      <Compile Include="Assets\AnimationObj.cs" />
      <Compile Include="Assets\ImputScript.cs" />
+     <Compile Include="Assets\RandomPath.cs" />
      <Compile Include="Assets\SpinMeRight.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>D:/Output/UnityProject/Test/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>

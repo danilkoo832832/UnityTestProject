@@ -12,9 +12,9 @@ public class AnimationObj : MonoBehaviour
     void Start()
     {
         //* Don't work
-        Debug.Log(segm_test(new Vector3(16,-12),new Vector3(22,5),new Vector3(0,0),new Vector3(7,-6)));
-        anim = new Animations(arpoly(new Vector3(0,0),4,8,6),true,10);
-        transform.position = anim.Points[0];
+        //Debug.Log(segm_test(new Vector3(16,-12),new Vector3(22,5),new Vector3(0,0),new Vector3(7,-6)));
+        //anim = new Animations(arpoly(new Vector3(0,0),4,12,12),true,10);
+        //transform.position = anim.Points[0];
         //*/
         //anim = new Animations(new Vector3[3]{new Vector3(10,10),new Vector3(10,20f),new Vector3(20,20f)},true,10);
     }
